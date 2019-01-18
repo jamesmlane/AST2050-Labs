@@ -7,7 +7,20 @@
 # This code is compatible with Python 2.x
 #=============================================================================
 
+###########################
+# Parameters to Customize
+###########################
+path_to_dir = './xray/'
+minExp = 5000 # min exposure time in ms
+maxExp = 30000 # max exposure time in ms
+expInc = 5000 # increment in exposure time, in ms
+gain = 2 # desired gain, in d
+imgNum = 1 # number of images to take
+###########################
+###########################
+
 import PyCapture2
+import numpy as np
 
 # Output FlyCapture Library Version being used.
 def printBuildInfo():
@@ -87,7 +100,7 @@ def enableEmbeddedTimeStamp(cam, enableTimeStamp):
 			print("\nTimeStamp is disabled.\n")
 
 # Grab a fixed number of images and save them with a filename header.
-def grabImages(cam, numImagesToGrab,header='image'):
+def grabImages(cam, numImagesToGrab,header='image',path_to_dir=path_to_dir):
     prevts = None
     
     for i in xrange(numImagesToGrab):
@@ -100,7 +113,7 @@ def grabImages(cam, numImagesToGrab,header='image'):
         prevts = ts
         
         # Save image to TIFF
-        filename = 'xraygain2/' + header + ("%05d.tiff" % i)
+        filename = path_to_dir + header + ("%05d.tiff" % i)
         newimg = image.convert(PyCapture2.PIXEL_FORMAT.MONO8)
         print("Saving the last image to ", filename)
         newimg.save(filename, PyCapture2.IMAGE_FILE_FORMAT.TIFF)
@@ -137,14 +150,33 @@ setupCamera(c)
 # Enable camera embedded timestamp
 enableEmbeddedTimeStamp(c, True)
 
+# ORIGINAL CODE:
+#########################################
+#########################################
 # Set up exposure time and gain of camera
-setExposureTime(c,5000)
-setGain(c,2)
+#setExposureTime(c,5000)
+#setGain(c,2)
 
-print("Starting image capture...")
-c.startCapture()
-grabImages(c, 1)
-c.stopCapture()
+#print("Starting image capture...")
+#c.startCapture()
+#grabImages(c, 1)
+#c.stopCapture()
+#########################################
+#########################################
+
+
+# NEW, LOOPING THROUGH EXPOSURE TIMES AND NAMING ACCORDINGLY
+##################################################################################
+##################################################################################
+exposureTimes = np.arange(minExp, maxExp+expInc, expInc)
+for time in exposureTimes:
+    setExposureTime(c,time)
+    setGain(c,gain)
+
+    print("Starting image capture...")
+    c.startCapture()
+    grabImages(c, imgNum, header='EXP%s_GAIN%s_image' % (time, gain))
+    c.stopCapture()
 
 # Disable camera embedded timestamp
 enableEmbeddedTimeStamp(c, False)
@@ -152,3 +184,9 @@ enableEmbeddedTimeStamp(c, False)
 c.disconnect()
 
 raw_input("Done! Press Enter to exit...\n")
+
+
+
+
+
+
