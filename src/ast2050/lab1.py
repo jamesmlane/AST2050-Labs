@@ -20,7 +20,7 @@ import ast2050.lab1
 import numpy as np
 import sys, os, pdb
 # import copy
-# import glob
+import glob
 # import subprocess
 
 # Imaging
@@ -79,4 +79,28 @@ def single_pixel_center_difference(image):
     
     return metric
     
-#def
+def masterDark(path_to_darks, ax1 = 964, ax2 = 1288):
+    """ Combines darks and takes the median of each pixel to make a master dark.
+
+    Parameters
+    ----------
+    path_to_darks: str
+        path to where the dark .tiff files are stored
+    ax1: float
+        first axis of the dark array; will probably always be the same
+    ax2: float
+        second axis of the dark array; will probably always be the same
+
+    Returns
+    ----------
+    """
+    darks = glob.glob(path_to_darks+'*.tiff')
+    master = np.empty((len(darks), ax1, ax2))
+    for idx, dark in enumerate(darks):
+        master[idx,:,:] = read_tiff(dark)
+    master_dark = np.median(master, axis=0) # take the median across the pixel axis
+    return master_dark
+
+
+
+
