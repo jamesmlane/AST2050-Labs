@@ -48,7 +48,7 @@ def read_tiff(filename):
 
 # ----------------------------------------------------------------------------
 
-def single_pixel_center_difference(image):
+def single_pixel_center_difference(image,threshold=0.):
     '''single_pixel_center_difference:
     
     For each pixel subtract the 8 surrounding pixels from the central pixel.
@@ -56,25 +56,35 @@ def single_pixel_center_difference(image):
     
     Args:
         image (float array) - Input image
+        threshold (float) - The threshold below which the metric will not be 
+            computed
         
     Returns:
         metric (float array) - Single pixel detection metric array
     '''
     
     # Shape arrays and output array.
-    lenx, leny = image.shape
+    lenx,leny = image.shape
     metric = np.zeros_like(image)
     
-    # Double loop over each pixel.
-    for i in range( lenx ):
-        for j in range( leny ):
-            
-            # Continue if an edge pixel
-            if i==0 or i==(lenx-1) or j==0 or j==(leny-1): continue
-            
-            # Subtract the pixels around the point 
-            metric[i,j] = 2*image[i,j] - np.sum(image[(i-1):(i+2),(j-1):(j+2)])
-        ###j
+    # Determine where to look
+    xs, ys = np.where( image > threshold )
+    npix = len( xs )
+    
+    for i in range( npix ):
+        
+        indx = xs[i]
+        indy = ys[i]
+        
+        # Continue if an edge pixel
+        if indx == 0 or indx == (lenx-1) or indy == 0 or indy == (leny-1): 
+            continue
+        ##fi
+        
+        # Calculate the metric
+        metric[indx,indy] = 2*image[indx,indy] - \
+                            np.sum(image[(indx-1):(indx+2),(indy-1):(indy+2)]) 
+                            
     ###i
     
     return metric
