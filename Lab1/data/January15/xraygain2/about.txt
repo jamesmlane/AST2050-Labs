@@ -1,0 +1,13 @@
+flat1 - gain=2d, exptime=5000ms
+flat2 - gain=2d, exptime=10000ms
+flat3 - gain=2d, exptime=15000ms
+flat4 - gain=2d, exptime=20000ms
+flat5 - gain=2d, exptime=25000ms
+flat6 - gain=2d, exptime=30000ms
+
+xray1 - gain=2d, exptime=5000ms
+xray2 - gain=2d, exptime=10000ms
+xray3 - gain=2d, exptime=15000ms
+xray4 - gain=2d, exptime=20000ms
+xray5 - gain=2d, exptime=25000ms
+xray6 - gain=2d, exptime=30000ms
