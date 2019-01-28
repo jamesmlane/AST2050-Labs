@@ -148,6 +148,46 @@ def masterDark(path_to_darks, ax1 = 964, ax2 = 1288):
     master_dark = np.median(master, axis=0) # take the median across the pixel axis
     return master_dark
 
+def divideImage(image, num=4):
+    """ Divides an image into subimages.
+
+    Parameters
+    ----------
+    image: ndarray
+        array to divide into subimages
+    num: int
+        number of images to divide along an axis
+
+    Returns
+    ----------
+    images: list
+        list containing an array for each subimage
+    """
+    images = []
+    splitX = np.split(image, num)
+    splitXY = [np.split(splitX[i], num, axis=1) for i in range(num)]
+    for i in splitXY:
+        for j in i:
+            images.append(j)
+    return images
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
