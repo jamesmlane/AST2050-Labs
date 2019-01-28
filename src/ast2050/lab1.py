@@ -111,6 +111,109 @@ def masterDark(path_to_darks, ax1 = 964, ax2 = 1288):
     master_dark = np.median(master, axis=0) # take the median across the pixel axis
     return master_dark
 
+def divideImage(image, num=4):
+    """ Divides an image into subimages.
+
+    Parameters
+    ----------
+    image: ndarray
+        array to divide into subimages
+    num: int
+        number of images to divide along an axis
+
+    Returns
+    ----------
+    images: list
+        list containing an array for each subimage
+    """
+    images = []
+    splitX = np.split(image, num)
+    splitXY = [np.split(splitX[i], num, axis=1) for i in range(num)]
+    for i in splitXY:
+        for j in i:
+            images.append(j)
+    return images
+
+# def photonEvents(array, ):
+#     """ Makes the plot of photon events in each image.
+
+#     Parameters
+#     ----------
+
+#     Returns
+#     ----------
+#     """
+#     fig = plt.figure()
+#     plt.plot()
+#     plt.xlabel('Image Number')
+#     plt.ylabel('Photon Events')
+#     plt.show()
+#     return
+
+# def hist(counts, bins):
+#     """ Makes the histogram needed for the lab.
+
+#     Parameters
+#     ----------
+#     counts: array
+#         array containing photon count events
+#     bins: int
+#         number of bins to 
+
+#     Returns
+#     ----------
+#     """
+#     fig = plt.figure()
+#     plt.plot()
+#     plt.xlabel('Counts')
+#     plt.ylabel('Frequency')
+#     plt.show()
+#     return
+
+# def statistics(counts, plot=True, log=False):
+#     """ Returns the statistics needed for the lab.
+
+#     Parameters
+#     ----------
+
+#     Returns
+#     ----------
+#     """
+#     means = np.empty(len(counts))
+#     stds = np.empty(len(counts))
+#     varis = np.empty(len(counts))
+#     for idx, count in enumerate(counts):
+#         means[idx] = np.mean(count)
+#         stds[idx] = np.std(count)
+#         varis[idx] = np.var(count)
+#     if plot:
+#         fig = plt.figure()
+#         plt.plot(means, varis)
+#         plt.xlabel('Mean Count Value')
+#         plt.ylabel('Variance')
+#         if log:
+#             plt.xscale('log')
+#             plt.yscale('log')
+#         plt.show()
+#     return means, stds, varis
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
