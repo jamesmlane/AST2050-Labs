@@ -19,9 +19,7 @@ import ast2050.lab1
 ## Basic
 import numpy as np
 import sys, os, pdb
-# import copy
 import glob
-# import subprocess
 
 # Imaging
 from PIL import Image
@@ -88,6 +86,45 @@ def single_pixel_center_difference(image,threshold=0.):
     ###i
     
     return metric
+
+# ----------------------------------------------------------------------------
+
+def detect_counts(data, dark=None, threshold_metric=100., threshold_spe=100.):
+    '''detect_counts:
+    
+    Take a data and a dark frame (optional), perform background subtraction and 
+    then detect single pixel events using the single_pixel_center_difference 
+    metric. 
+    
+    Args:
+        data (float array) - Data array
+        dark (float array) - Dark array. If None then data is already 
+            background subtracted. [None]
+        threshold_metric (float) - The threshold to consider a point for 
+            calculation of the metric (saves time so you don't calculate the 
+            metric on pixels with low numbers of counts) [100.]
+        threshold_spe (float) - The threshold of the metric function to count 
+            something as a single pixel event. [100.]
+    Returns:
+        spe_data (float array) - Array of single pixel event count numbers
+        where_spe (float array) - Array of single pixel event locations (xs,ys)
+    '''
+    
+    # Background subtraction
+    if type(dark) != type(None):
+        data -= dark
+    ##fi
+    
+    # Calculate the metric and determine where single pixel events are.
+    metric = single_pixel_center_difference(data,threshold=threshold_metric)
+    where_spe = np.where(metric > threshold_spe)
+    spe_data = data[where_spe]
+    
+    return spe_data, where_spe
+# def
+
+# ----------------------------------------------------------------------------
+
     
 def masterDark(path_to_darks, ax1 = 964, ax2 = 1288):
     """ Combines darks and takes the median of each pixel to make a master dark.
