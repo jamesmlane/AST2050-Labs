@@ -15,7 +15,7 @@ def PoissonDist(mu, x):
 	mu: float
 		mean
 	x: array
-		array of x values to put into the Poisson distribution
+		array of interger x values to put into the Poisson distribution
 
 	Returns
 	----------
@@ -45,7 +45,7 @@ for jdx, split in enumerate(splitImage):
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
-ax.hist(n_counts, histtype='step', linewidth=2, color='k', density=True)
+ax.hist(n_counts, histtype='step', align='mid', linewidth=2, color='k', density=True)
 ax.axvline(np.mean(n_counts), color='r', linestyle='--', label=r'$\mu$ = %s' % np.mean(n_counts))
 x = np.linspace(min(n_counts), max(n_counts))
 ax.plot(x, PoissonDist(mean(n_counts), x), color='blue', linewidth=2, label='Poisson Distribution')
