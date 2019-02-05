@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 sys.path.append('../../src/')
 import ast2050.lab1
 from scipy.special import factorial
+from scipy.stats import chi
 
 # Plot a histogram for one of your sequences with a small count rate, e.g, 2-4 counts
 
@@ -48,12 +49,25 @@ ax = fig.add_subplot(111)
 ax.hist(n_counts, histtype='step', align='mid', linewidth=2, color='k', density=True)
 ax.axvline(np.mean(n_counts), color='r', linestyle='--', label=r'$\mu$ = %s' % np.mean(n_counts))
 x = np.linspace(min(n_counts), max(n_counts))
-ax.plot(x, PoissonDist(mean(n_counts), x), color='blue', linewidth=2, label='Poisson Distribution')
+ax.plot(x, PoissonDist(np.mean(n_counts), x), color='blue', linewidth=2, label='Poisson Distribution')
 ax.legend(fancybox='True', loc='best')
 ax.set_xlabel('Counts')
 ax.set_ylabel('Normalized Frequency')
 fig.savefig('Poisson_Distribution.pdf')
 
+# Bin the counts before calculating the Chi square statistic
+max_counts = np.max(n_counts)
+binned_counts, bin_edges = np.histogram(n_counts, bins=np.linspace(0,max_counts+1,max_counts+2)-0.5)
+binned_counts = binned_counts / len(n_counts)
+bin_numbers = np.linspace(0, max_counts, max_counts+1)
+poisson_bin = PoissonDist(np.mean(n_counts), bin_numbers)
 
+# Calculate the Chi Square statistic and the number of degrees of freedom
+chisquare = np.sum( np.divide( np.square( binned_counts - poisson_bin ), poisson_bin ) ) 
+# Number of data classes - number of variables (just mean) - 1
+dof = len( np.where(binned_counts>0.0)[0] ) - 2
 
+# Calculate the p-value, the inverse CDF of the Chi Square function
+pvalue = 1-chi.cdf(chisquare,dof)
 
+pdb.set_trace()
