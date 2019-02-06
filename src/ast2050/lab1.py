@@ -18,7 +18,7 @@ import ast2050.lab1
 
 ## Basic
 import numpy as np
-import sys, os, pdb
+import sys, os, pdb, re
 import glob
 
 # Imaging
@@ -124,7 +124,6 @@ def detect_counts(data, dark=None, threshold_metric=100., threshold_spe=100.):
 # def
 
 # ----------------------------------------------------------------------------
-
     
 def masterDark(path_to_darks, ax1 = 964, ax2 = 1288):
     """ Combines darks and takes the median of each pixel to make a master dark.
@@ -174,12 +173,38 @@ def divideImage(image, xcrop=0, ycrop=0, xnum=4, ynum=4):
             images.append(np.asarray(j, dtype='float'))
     return images
 
+# ----------------------------------------------------------------------------
 
+def sort_nicely(l):
+    '''sort_nicely:
 
+    Sort a bunch of files as a human would rather than how a dumb computer
+    would
+    
+    Use as: 
+    >> list = [things,more,things]
+    >> ast2050.lab1.sort_nicely(list)
+    >> # List is now sorted
 
+    Args:
+        l (str array) - array of filenames to sort
 
+    Returns:
+        s - sorted array of
+    '''
+    def tryint(s):
+            try:
+                    return int(s)
+            except:
+                    return s
+    #def
+    def alphanum_key(s):
+            return [ tryint(c) for c in re.split('([0-9]+)', s) ]
+    #def
+    l.sort(key=alphanum_key)
+#def
 
-
+# ----------------------------------------------------------------------------
 
 
 
