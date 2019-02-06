@@ -1,12 +1,12 @@
 # ----------------------------------------------------------------------------
 #
-# TITLE - ChiSquare_Poisson.py
+# TITLE - ChiSquare_Gaussian.py
 # PROJECT - 
 #
 # ----------------------------------------------------------------------------
 
 ### Docstrings and metadata:
-'''Determine the Chi-Square value for the Poisson distribution given a fixed 
+'''Determine the Chi-Square value for the Gaussian distribution given a fixed 
 way of dividing each image.
 '''
 __author__ = "James Lane"
@@ -16,7 +16,7 @@ import numpy as np
 import sys, os, pdb, glob
 from matplotlib import pyplot as plt
 from scipy.special import factorial
-from scipy.stats import chi2,poisson
+from scipy.stats import chi2,norm
 
 # Project specific
 sys.path.append('../../src/')
@@ -45,7 +45,7 @@ master_dark = np.load('./masterDark.npy')
 master_dark_crop = master_dark[:900,:900]
 
 # Select the number of ways to divide up the image
-use_divisors = np.array( divisors(900)[:-10] )
+use_divisors = np.array( divisors(900)[3:-10] )
 n_divisors = len(use_divisors)
 
 # Store the p-values
@@ -77,25 +77,26 @@ for i in range( n_images ):
         n_samps = div**2
         max_counts = np.max(n_counts)
         mean_counts = np.mean(n_counts)
+        std_counts = np.std(n_counts)
         
         # Determine where the minimum and maximum trailing bins begin. Define 
         # them such that they will contain each ~1/20 of events
-        min_trailing_bin = poisson.ppf(0.05,mean_counts) # Inverse of cumulative
-        max_trailing_bin = poisson.ppf(0.95,mean_counts)
+        min_trailing_bin = norm.ppf(0.05, loc=mean_counts, scale=std_counts)
+        max_trailing_bin = norm.ppf(0.95, loc=mean_counts, scale=std_counts)
         
-        # n_poisson_bins = max( [8,max_trailing_bin-min_trailing_bin] )
-        n_poisson_bins = 10
+        # n_gaussian_bins = max( [8,max_trailing_bin-min_trailing_bin] )
+        n_gaussian_bins = 10
         if ( max_trailing_bin - min_trailing_bin ) < 10:
-            n_poisson_bins = max_trailing_bin-min_trailing_bin+2
+            n_gaussian_bins = max_trailing_bin-min_trailing_bin+2
         
         # Split up the space between the minimum and maximum trailing bins 
         # into 8 equally sized bins, making 10 bins total
-        bin_edges = np.linspace( min_trailing_bin, max_trailing_bin, num=n_poisson_bins-1)
+        bin_edges = np.linspace( min_trailing_bin, max_trailing_bin, num=n_gaussian_bins-1)
         binned_counts = np.empty( len(bin_edges)+1 )
         
         # Determine the probability in each bin
-        pcdf = poisson.cdf(bin_edges,mean_counts)
-        binned_poisson = np.append( pcdf[0], np.append(np.diff(pcdf), 1-pcdf[-1] ) ) * n_samps
+        pcdf = norm.cdf(bin_edges, loc=mean_counts, scale=std_counts)
+        binned_gaussian = np.append( pcdf[0], np.append(np.diff(pcdf), 1-pcdf[-1] ) ) * n_samps
         
         # Determine the counts in each bin
         for k in range( len(bin_edges) ):
@@ -109,14 +110,15 @@ for i in range( n_images ):
         ###k
         
         # Calculate the Chi Square statistic and the number of degrees of freedom
-        chisquare = np.sum( np.divide( np.square( binned_counts - binned_poisson ), 
-                                       binned_poisson) ) 
+        chisquare = np.sum( np.divide( np.square( binned_counts - binned_gaussian ), 
+                                       binned_gaussian) ) 
         # Number of data classes - number of variables (just mean) - 1
         dof = ( len( bin_edges ) + 1 ) - 2 
         
         # Calculate the p-value, 1-CDF of the Chi Square function
         p_value = 1-chi2.cdf(chisquare,dof)
         p_values[j,i] = p_value 
+        
     ###j
     print('Done '+str(i+1)+' of '+str(n_images))
 ###i
@@ -150,6 +152,6 @@ ax.set_ylabel(r'p-value')
 ax.axhline(0.0, linestyle='dotted', color='Black', linewidth=1.0)
 ax.axhline(1.0, linestyle='dotted', color='Black', linewidth=1.0)
 
-plt.savefig('Poisson_ChiSquare.pdf')
+plt.savefig('Gaussian_ChiSquare.pdf')
 
 #
