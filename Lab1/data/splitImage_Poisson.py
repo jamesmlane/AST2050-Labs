@@ -53,7 +53,7 @@ x = np.linspace(min(n_counts), max(n_counts), num=1000)
 ax.plot(x, PoissonDist(np.mean(n_counts), x)*len(n_counts), color='blue', linewidth=2, label='Poisson Distribution')
 ax.legend(fancybox='True', loc='best')
 ax.set_xlabel('Counts')
-ax.set_ylabel('Normalized Frequency')
+ax.set_ylabel('Number')
 ax.set_xlim(0,11)
 fig.savefig('Poisson_Distribution.pdf')
 
