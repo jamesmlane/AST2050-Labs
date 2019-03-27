@@ -25,7 +25,8 @@ import glob
 from matplotlib import pyplot as plt
 
 ## Astropy
-from astropy.coordinates import SkyCoord
+from astropy.time import Time
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz
 from astropy import units as apu
 
 # ----------------------------------------------------------------------------
@@ -56,10 +57,34 @@ def calculate_galactic_longitude_radec(lon):
     Returns:
         (Ra,Dec)
     '''
-    coord_gal = SkyCoord( lat=np.zeros_like(lon)*apu.deg, lon=lon*apu.deg )
+    coord_gal = SkyCoord( l=lon*apu.deg, b=np.zeros_like(lon)*apu.deg, 
+                        frame='galactic' )
     coord_icrs = coord_gal.icrs
     return (coord_icrs.ra.value,coord_icrs.dec.value)
 #def
+
+def calculate_galactic_longitude_altaz(lon, date_time_string):
+    '''calculate_galactic_longitude_altaz:
+    
+    Calculate the Alt / Az of a point in the plane of the galaxy.
+    
+    Args:
+        lon (float) - galactic longitude
+        date_time_string (string) - A string specifying the date and time that 
+            takes the form: 'YYYY-MM-DD HH:MM:SS'
+        
+    Returns:
+        (Ra,Dec)
+    '''
+    coord_gal = SkyCoord( l=lon*apu.deg, b=np.zeros_like(lon)*apu.deg, 
+                        frame='galactic' )
+    toronto_location = EarthLocation( lon=(360-79.3832)*apu.deg, lat=43.6532*apu.deg, 
+                                      height=70*apu.m )
+    utoffset = -4*apu.hour # EDT
+    time = Time(date_time_string) - utoffset
+    coord_altaz = coord_gal.transform_to(AltAz(obstime=time, 
+                                                location=toronto_location))
+    return (coord_altaz.alt.value, coord_altaz.az.value)
 
 def calculate_power_bsub(data,background,sample_rate=5.0E6,lof=1.42E9):
     '''calculate_power_bsub:
