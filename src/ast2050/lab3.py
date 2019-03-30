@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 ### Docstrings and metadata:
-'''Functions for Lab 1 of AST 2050
+'''Functions for Lab 3 of AST 2050
 
 Import me by including this at the beginning of the script:
 sys.path.append('path/to/src/')
@@ -35,7 +35,7 @@ def read_airspy_data(filename):
     '''
     read_airspy_data:
     
-    Reads data from the airspy. Returns a time series.
+    Reads data recorded using the airspy. Returns a time series.
     
     Args:
         filename (string)
@@ -85,16 +85,18 @@ def calculate_galactic_longitude_altaz(lon, date_time_string):
     coord_altaz = coord_gal.transform_to(AltAz(obstime=time, 
                                                 location=toronto_location))
     return (coord_altaz.alt.value, coord_altaz.az.value)
+#def
 
-def calculate_power_bsub(data,background,sample_rate=5.0E6,lof=1.42E9):
-    '''calculate_power_bsub:
+def calculate_power(data,chunk_size,sample_rate=5.0E6,lof=1.42E9):
+    '''calculate_power:
     
-    Take a raw data time series from the Airspy and compute the 
-    power spectrum and subtract off the background.
-        
+    Take the raw data time series from the airspy and compute the 
+    power spectrum
+    
     Args:
         data (N-length int array)
-        background (N-length int array) [None]
+        chunk_size (int) - The number of data points to calculate the FFT on 
+            at a time
         sample_rate (float) - samples/second [5E6]
         lof (float) - local oscillator frequency in Hz [1.42 Ghz]
         
@@ -103,34 +105,24 @@ def calculate_power_bsub(data,background,sample_rate=5.0E6,lof=1.42E9):
         freqs (float array) - RF Frequencies
     '''
     
-    # Make sure data and background have the same length
-    len_data = len(data)
-    len_bg = len(background)
-    if len_data > len_bg:
-        data = data[:len_bg]
-    elif len_bg > len_data:
-        background = background[:len_data]
-    ##ei
+    # Sample length
+    sample_size = len(data)
+    timestep = 1/sample_rate
     
-    # Take the Fourier transform and shift it
-    ft_data = np.fft.fftshift( np.fft.fft( data ) )
-    ft_bg = np.fft.fftshift( np.fft.fft( background ) )
+    # Array to hold stacked fft result
+    fft = np.zeros(chunk_size//2+1,dtype='complex64')
+    
+    # Take the Fourier transform looped over the chunks
+    for i in range( sample_size//chunk_size ):
+        fft += np.fft.rfft(data[ i*chunk_size : (i+1)*chunk_size ]) / (chunk_size/2)
+    ###i
     
     # Determine the frequencies
-    freq = np.fft.fftshift( np.fft.fftfreq( len_data, 1/sample_rate ) )
-    freq_rf = np.abs( freq_data[:int(len_data/2)] ) + lof
+    freq = abs( lof - np.fft.rfftfreq(chunk_size, d=timestep) ) + sample_rate/4
     
-    # Calculate the power using the periodogram
-    power_data = np.abs(ft_data)**2 + np.abs(ft_data[::-1])**2
-    power_background = np.abs(ft_background)**2 + np.abs(ft_background[::-1])**2
+    # Calculate the power using the periodogram. Trivial because we've only 
+    # taken positive frequency data anyways.
+    power = np.abs( fft )**2
     
-    # Only take the power corresponding to positive frequencies.
-    # Then normalize by the square of the number of data points
-    power_data_rf = power_data[:int(len_data/2)] / n_data**2
-    power_background_rf = power_background[:int(len_data/2)] / n_data**2
-    power_data_rf_bsub = power_data_rf - power_background_rf
-    
-    return power_data_rf_bsub, freq_data_rf
-    
+    return freq, power
 #def
-
